@@ -1,0 +1,16 @@
+name: fake-review-detector
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - pandas
+  - numpy
+  - scikit-learn
+  - nltk
+  - tqdm
+  - joblib
+  - pip:
+    - kaggle
+

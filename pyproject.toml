@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fake_reviews_classifier"
+version = "0.1.0"
+description = "Detect fake reviews using ML"
+authors = [
+  { name = "Your Name", email = "you@example.com" }
+]
+license = { text = "MIT" }
+readme = "docs/README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "pandas",
+  "numpy",
+  "scikit-learn",
+  "nltk",
+  "tqdm",
+  "joblib",
+]
+[project.scripts]
+train = "fake_reviews_classifier.train:main"
+predict = "fake_reviews_classifier.predict:main"
+
