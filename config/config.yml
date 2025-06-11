@@ -1,5 +1,0 @@
-download:
-  dataset: mexwell/fake-reviews-dataset
-
-model:
-  model_path: models/fake_detector.joblib
