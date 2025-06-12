@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fake-reviews-detector"
+version = "0.1.0"
+description = "Fake Reviews Detection application"
+authors = [
+  { name = "German Feskov", email = "g.feskov@yandex.com" },
+  { name = "Rogov Danil", email = "drogov@yandex.com" }
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "pandas",
+  "numpy",
+  "scikit-learn",
+  "matplotlib",
+  "seaborn",
+  "tqdm",
+  "nltk",
+  "pyyaml",
+  "kagglehub"
+]
+
+[tool.setuptools]
+packages = { find = { where = ["src"] } }

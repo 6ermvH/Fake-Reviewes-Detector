@@ -2,7 +2,7 @@ from pathlib import Path
 import joblib
 import pandas as pd
 
-from preprocessing import clean_text
+from fake_reviews_detector.preprocessing import clean_text
 
 def load_artifacts(model_path: Path, vectorizer_path: Path):
     vec = joblib.load(vectorizer_path)

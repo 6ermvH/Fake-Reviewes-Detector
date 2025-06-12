@@ -12,8 +12,8 @@ styles:
     background: "#f0f0f0"
 
 files:
-  default_train_dir: "./data/train"
-  default_predict_dir: "./data/predict"
+  default_train_dir: "data/train"
+  default_predict_dir: "data/predict"
   allowed_extensions: ["csv", "txt"]
 
 ui_text:
