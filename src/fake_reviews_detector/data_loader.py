@@ -61,7 +61,7 @@ def load_raw_dataset(config_path: str) -> pd.DataFrame:
 
 # Сохранение обработанного датасета в файл
 def save_processed_dataset(df: pd.DataFrame, config_path: str) -> None:
-    processed_df = preprocess_dataset(df, config_path)
+    processed_df = preprocess_dataset(df)
     cfg = load_yaml_config(config_path)["dataset"]
     proc_dir = Path(cfg["processed_data_dir"])
     proc_file = cfg["processed_data_file"]

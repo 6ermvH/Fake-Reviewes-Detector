@@ -3,20 +3,16 @@ import pandas as pd
 import re
 import nltk
 from nltk.corpus import stopwords
-import yaml
 
-
-def load_yaml_config(config_path="../../config/local_dev.yaml") -> dict:
-    with open(config_path, 'r', encoding='utf-8') as f:
-        return yaml.safe_load(f)
-
+# Загрузка конфига
+config = load_yaml_config("../../config/local_dev.yaml")
 
 # Загрузка шумовых слов
 nltk.download('stopwords', quiet=True)
 
 
 # Очистка и превращение текста в удобный вид
-def clean_text(text: str, config: dict) -> str:
+def clean_text(text: str) -> str:
     if config["lowercase"]:
         text = text.lower()
     if config["remove_punctuation"]:
@@ -28,9 +24,7 @@ def clean_text(text: str, config: dict) -> str:
 
 
 # Предобработка данных
-def preprocess_dataset(df: pd.DataFrame, config_path: str) -> pd.DataFrame:
-    config = load_yaml_config(config_path)
-
+def preprocess_dataset(df: pd.DataFrame) -> pd.DataFrame:
     review_col = config["dataset"]["columns"]["review"]
     label_col = config["dataset"]["columns"]["label"]
     value_map = {

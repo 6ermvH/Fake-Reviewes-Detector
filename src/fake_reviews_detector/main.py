@@ -8,4 +8,3 @@ target_path = os.path.join(cfg["raw_data_dir"], cfg["raw_data_file"])
 
 # при таком вызове файл внутри папки будет переименован в cfg["raw_data_file"]
 download_kaggle_dataset(cfg["image"], target_path)
-

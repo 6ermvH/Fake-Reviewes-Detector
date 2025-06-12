@@ -1,17 +1,15 @@
+from fake_reviews_detector.utils import load_yaml_config
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import pandas as pd
 import os
-import yaml
 
+# import preprocessing
+# import data_loader
+# import model
 
-# Загрузка конфигурации
-def load_yaml_config(config_path="../../config/gui_config.yaml") -> dict:
-    with open(config_path, 'r', encoding='utf-8') as f:
-        return yaml.safe_load(f)
-
-
-config = load_yaml_config()
+# Загрузка конфига
+config = load_yaml_config("../../config/gui_config.yaml")
 
 # Глобальные переменные
 model = None
@@ -20,7 +18,7 @@ train_file_path = ""
 test_file_path = ""
 
 
-def create_gui(root):
+def create_gui(root) -> None:
     # Настройка главного окна из конфига
     root.title(config['app']['title'])
     root.geometry(config['app']['geometry'])
@@ -91,11 +89,9 @@ def create_gui(root):
     status_bar = ttk.Label(main_frame, text=config['ui_text']['status']['ready'], relief=tk.SUNKEN)
     status_bar.pack(fill=tk.X, pady=5)
 
-    return status_bar
-
 
 # Поиск файла для обучения
-def browse_train_file(entry_widget):
+def browse_train_file(entry_widget) -> None:
     global train_file_path
     initial_dir = config['files']['default_train_dir'] if os.path.exists(config['files']['default_train_dir']) else None
     file_path = filedialog.askopenfilename(
@@ -111,7 +107,7 @@ def browse_train_file(entry_widget):
 
 
 # Поиск файла для предсказания
-def browse_predict_file(entry_widget, status_bar):
+def browse_predict_file(entry_widget, status_bar) -> None:
     global test_file_path
     initial_dir = config['files']['default_predict_dir'] if os.path.exists(
         config['files']['default_predict_dir']) else None
@@ -128,18 +124,18 @@ def browse_predict_file(entry_widget, status_bar):
 
 
 # Сделать предсказание
-def make_prediction(text_widget, file_entry, results_text, status_bar):
+def make_prediction(text_widget, file_entry, results_text, status_bar) -> None:
     global model, model_trained
 
     if not model_trained:
-        messagebox.showerror("Ошибка", "Пожалуйста, сначала обучите модель")
+        messagebox.showerror("Error", "Please, train model")
         return
 
     input_text = text_widget.get("1.0", tk.END).strip()
     file_path = file_entry.get().strip()
 
     if not input_text and not file_path:
-        messagebox.showerror("Ошибка", "Пожалуйста, введите строку или выберите файл для предсказания")
+        messagebox.showerror("Error", "Please enter text or select a file for prediction.")
         return
 
     try:
@@ -147,46 +143,46 @@ def make_prediction(text_widget, file_entry, results_text, status_bar):
         results_text.delete("1.0", tk.END)
 
         if input_text:
-            update_status("Обработка введенной строки...", status_bar)
+            update_status("Processing input string...", status_bar)
             try:
                 data = [list(map(float, input_text.split(',')))]
                 prediction = model.predict(data)
-                results_text.insert(tk.END, f"Результат предсказания: {prediction[0]}\n")
-                update_status("Предсказание выполнено для введенной строки", status_bar)
+                results_text.insert(tk.END, f"Prediction result: {prediction[0]}\n")
+                update_status("Prediction fulfilled for the input string", status_bar)
             except Exception as e:
-                results_text.insert(tk.END, f"Ошибка: Неверный формат строки. Ожидаются числа, разделенные запятыми.\n")
-                update_status("Ошибка формата введенной строки", status_bar)
+                results_text.insert(tk.END, f"Error: Invalid string format.\n")
+                update_status("Error in format of entered string", status_bar)
 
         if file_path:
-            update_status(f"Обработка файла {os.path.basename(file_path)}...", status_bar)
+            update_status(f"Processing file {os.path.basename(file_path)}...", status_bar)
             try:
                 test_data = pd.read_csv(file_path)
                 predictions = model.predict(test_data)
 
-                results_text.insert(tk.END, "Результаты предсказания:\n")
+                results_text.insert(tk.END, "Prediction result:\n")
                 for i, pred in enumerate(predictions, 1):
-                    results_text.insert(tk.END, f"Строка {i}: {pred}\n")
+                    results_text.insert(tk.END, f"String {i}: {pred}\n")
 
-                update_status(f"Предсказание выполнено для файла {os.path.basename(file_path)}", status_bar)
+                update_status(f"Prediction fulfilled for file {os.path.basename(file_path)}", status_bar)
             except Exception as e:
-                results_text.insert(tk.END, f"Ошибка при обработке файла: {str(e)}\n")
-                update_status("Ошибка при обработке файла", status_bar)
+                results_text.insert(tk.END, f"Error processing file: {str(e)}\n")
+                update_status("Error processing file", status_bar)
 
         results_text.config(state=tk.DISABLED)
 
     except Exception as e:
-        update_status("Ошибка при выполнении предсказания", status_bar)
-        messagebox.showerror("Ошибка", f"Не удалось выполнить предсказание: {str(e)}")
+        update_status("Error in prediction execution", status_bar)
+        messagebox.showerror("Error", f"Failed to fulfill prediction: {str(e)}")
 
 
-def update_status(message, status_bar):
+def update_status(message, status_bar) -> None:
     status_bar.config(text=message)
     status_bar.master.update_idletasks()
 
 
 def main():
     root = tk.Tk()
-    status_bar = create_gui(root)
+    create_gui(root)
     root.mainloop()
 
 
