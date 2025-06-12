@@ -44,7 +44,7 @@ def preview(
         'pred_label': decoded
     })
 
-def preview_single(text: str, cfg) -> pd.DataFrame:
+def preview_single(text: str, cfg) -> int:
     model_path = Path(cfg['model_path'])
     vectorizer_path = Path(cfg['vectorizer_path'])
     vec, model = load_artifacts(model_path, vectorizer_path)

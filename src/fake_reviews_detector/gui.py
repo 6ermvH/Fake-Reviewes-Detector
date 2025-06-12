@@ -8,7 +8,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import os
 import pandas as pd
-import time
+from preview import preview_single
 
 # Загрузка конфига
 config = load_yaml_config("config/gui_config.yaml")
@@ -141,9 +141,8 @@ def make_prediction(text_widget, file_entry, results_text, status_bar) -> None:
         if input_text:
             update_status("Processing input string...", status_bar)
             try:
-                data = [list(map(float, input_text.split(',')))]
-                # prediction = model.predict(data)
-                # results_text.insert(tk.END, f"Prediction result: {prediction[0]}\n")
+                prediction = preview_single(input_text, cfg)
+                results_text.insert(tk.END, f"Prediction result for {input_text}: {bool(prediction)}\n")
                 update_status("Prediction fulfilled for the input string", status_bar)
             except Exception as e:
                 results_text.insert(tk.END, f"Error processing string: {e}\n")
@@ -152,7 +151,6 @@ def make_prediction(text_widget, file_entry, results_text, status_bar) -> None:
             update_status(f"Processing file {os.path.basename(file_path)}...", status_bar)
             try:
                 test_data = pd.read_csv(file_path)
-                predictions = model.predict(test_data)
                 results_text.insert(tk.END, "Prediction result:\n")
                 for i, pred in enumerate(predictions, 1):
                     results_text.insert(tk.END, f"String {i}: {pred}\n")
@@ -179,18 +177,14 @@ def train_model(progress_bar, status_bar) -> None:
     try:
         progress_bar['value'] = 0
         update_status("Loading data...", status_bar)
-        raw_data = pd.read_csv(train_file_path)
         progress_bar['value'] = 10
         update_status("Preprocessing data...", status_bar)
-        create_processed_csv(raw_data, cfg, cfg["dataset_path"])
-        # if processed_data is None or processed_data.empty:
-        #     raise ValueError("Preprocessing returned empty data")
+        create_processed_csv(train_file_path, cfg, cfg["dataset_path"])
         progress_bar['value'] = 50
         update_status("Learning model...", status_bar)
-        # train_model(cfg)
+        train.train_model(cfg)
         progress_bar['value'] = 80
         update_status("Finalization of the model...", status_bar)
-        time.sleep(1)
         model_trained = True
         progress_bar['value'] = 100
         update_status(f"The model is trained!", status_bar)
