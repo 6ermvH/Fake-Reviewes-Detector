@@ -2,6 +2,8 @@ dataset_path: data/processed/data.csv
 model_path: data/model/model.pkl
 vectorizer_path: data/model/vectorizer.pkl
 
+log_file: data/log.txt
+
 dataset:
   columns:
     review: text_
