@@ -22,7 +22,7 @@ ui_text:
     model_training: "Обучение модели"
     prediction: "Предсказание"
   buttons:
-    browse: "Обзор..."
+    browse: "Обзор"
     train: "Обучить модель"
     predict: "Сделать предсказание"
   labels:

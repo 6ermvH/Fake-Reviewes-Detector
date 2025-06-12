@@ -1,13 +1,12 @@
-# from fake_reviews_detector.utils import load_yaml_config
+# src/fake_reviews_detector/gui.py
 
 
 from utils import load_yaml_config
 from preprocessing import create_processed_csv
 # import data_loader
-# import model
+# import modelx
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
-import pandas as pd
 import os
 from tkinter import messagebox
 import pandas as pd
@@ -17,7 +16,6 @@ import traceback
 # Загрузка конфига
 config = load_yaml_config("../../config/gui_config.yaml")
 
-# Глобальные переменные
 model = None
 model_trained = False
 train_file_path = ""
@@ -109,7 +107,7 @@ def browse_train_file(entry_widget, status_bar) -> None:
         train_file_path = file_path
         entry_widget.delete(0, tk.END)
         entry_widget.insert(0, file_path)
-        update_status(f"Загружен файл: {os.path.basename(file_path)}", status_bar)
+        update_status(f"File loaded: {os.path.basename(file_path)}", status_bar)
 
 
 # Поиск файла для предсказания
@@ -126,7 +124,7 @@ def browse_predict_file(entry_widget, status_bar) -> None:
         test_file_path = file_path
         entry_widget.delete(0, tk.END)
         entry_widget.insert(0, file_path)
-        update_status(f"Загружен файл для предсказания: {os.path.basename(file_path)}", status_bar)
+        update_status(f"Loaded predict file: {os.path.basename(file_path)}", status_bar)
 
 
 # Сделать предсказание
@@ -179,36 +177,36 @@ def update_status(message, status_bar) -> None:
 def train_model(progress_bar, status_bar) -> None:
     global model, model_trained, train_file_path
     if not train_file_path:
-        messagebox.showerror("Ошибка", "Сначала выберите файл для обучения")
+        messagebox.showerror("Error", "Choose learning file")
         return
     try:
         progress_bar['value'] = 0
-        update_status("Загрузка данных...", status_bar)
+        update_status("Loading data...", status_bar)
         raw_data = pd.read_csv(train_file_path)
         progress_bar['value'] = 10
-        update_status("Предобработка данных...", status_bar)
+        update_status("Preprocessing data...", status_bar)
         processed_data = create_processed_csv(raw_data)
         if processed_data is None or processed_data.empty:
-            raise ValueError("Предобработка вернула пустые данные")
+            raise ValueError("Preprocessing returned empty data")
         progress_bar['value'] = 50
-        update_status("Обучение модели...", status_bar)
+        update_status("Learning model...", status_bar)
 
         # Обучение модели
 
         progress_bar['value'] = 80
-        update_status("Финализация модели...", status_bar)
+        update_status("Finalization of the model...", status_bar)
         time.sleep(1)
         model_trained = True
         progress_bar['value'] = 100
-        update_status(f"Модель обучена! Обработано {len(raw_data)} примеров", status_bar)
-        messagebox.showinfo("Успех", "Модель успешно обучена!")
+        update_status(f"The model is trained!", status_bar)
+        messagebox.showinfo("Success!", "The model is trained successfully!")
     except Exception as e:
         model_trained = False
         progress_bar['value'] = 0
-        update_status("Ошибка при обучении", status_bar)
-        messagebox.showerror("Ошибка обучения",
-                             f"Не удалось обучить модель:\n{str(e)}\n\nПодробности в консоли")
-        print(f"Ошибка обучения:\n{traceback.format_exc()}")
+        update_status("Error during training", status_bar)
+        messagebox.showerror("Error during training",
+                             f"Failed to train model:\n{str(e)}\n\nDetails in the console")
+        print(f"Error during training:\n{traceback.format_exc()}")
 
 
 def main():
