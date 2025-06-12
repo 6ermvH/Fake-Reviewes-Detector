@@ -1,12 +1,18 @@
-from fake_reviews_detector.utils import load_yaml_config
+# from fake_reviews_detector.utils import load_yaml_config
+
+
+from utils import load_yaml_config
+from preprocessing import preprocess_dataset
+# import data_loader
+# import model
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import pandas as pd
 import os
-
-# import preprocessing
-# import data_loader
-# import model
+from tkinter import messagebox
+import pandas as pd
+import time
+import traceback
 
 # Загрузка конфига
 config = load_yaml_config("../../config/gui_config.yaml")
@@ -18,7 +24,7 @@ train_file_path = ""
 test_file_path = ""
 
 
-def create_gui(root) -> None:
+def create_gui(root, status_bar=None) -> None:
     # Настройка главного окна из конфига
     root.title(config['app']['title'])
     root.geometry(config['app']['geometry'])
@@ -44,7 +50,7 @@ def create_gui(root) -> None:
     train_file_entry = ttk.Entry(data_frame, width=50)
     train_file_entry.grid(row=0, column=1, padx=5)
     ttk.Button(data_frame, text=config['ui_text']['buttons']['browse'],
-               command=lambda: browse_train_file(train_file_entry)).grid(row=0, column=2)
+               command=lambda: browse_train_file(train_file_entry, status_bar)).grid(row=0, column=2)
 
     # Окно обучения модели
     train_frame = ttk.LabelFrame(main_frame, text=config['ui_text']['main']['model_training'], padding=10)
@@ -91,7 +97,7 @@ def create_gui(root) -> None:
 
 
 # Поиск файла для обучения
-def browse_train_file(entry_widget) -> None:
+def browse_train_file(entry_widget, status_bar) -> None:
     global train_file_path
     initial_dir = config['files']['default_train_dir'] if os.path.exists(config['files']['default_train_dir']) else None
     file_path = filedialog.askopenfilename(
@@ -103,7 +109,7 @@ def browse_train_file(entry_widget) -> None:
         train_file_path = file_path
         entry_widget.delete(0, tk.END)
         entry_widget.insert(0, file_path)
-        update_status(f"Загружен файл: {os.path.basename(file_path)}")
+        update_status(f"Загружен файл: {os.path.basename(file_path)}", status_bar)
 
 
 # Поиск файла для предсказания
@@ -178,6 +184,41 @@ def make_prediction(text_widget, file_entry, results_text, status_bar) -> None:
 def update_status(message, status_bar) -> None:
     status_bar.config(text=message)
     status_bar.master.update_idletasks()
+
+
+def train_model(progress_bar, status_bar) -> None:
+    global model, model_trained, train_file_path
+    if not train_file_path:
+        messagebox.showerror("Ошибка", "Сначала выберите файл для обучения")
+        return
+    try:
+        progress_bar['value'] = 0
+        update_status("Загрузка данных...", status_bar)
+        raw_data = pd.read_csv(train_file_path)
+        progress_bar['value'] = 10
+        update_status("Предобработка данных...", status_bar)
+        processed_data = preprocess_dataset(raw_data)
+        if processed_data is None or processed_data.empty:
+            raise ValueError("Предобработка вернула пустые данные")
+        progress_bar['value'] = 50
+        update_status("Обучение модели...", status_bar)
+
+        # Код модели
+
+        progress_bar['value'] = 80
+        update_status("Финализация модели...", status_bar)
+        time.sleep(1)
+        model_trained = True
+        progress_bar['value'] = 100
+        update_status(f"Модель обучена! Обработано {len(raw_data)} примеров", status_bar)
+        messagebox.showinfo("Успех", "Модель успешно обучена!")
+    except Exception as e:
+        model_trained = False
+        progress_bar['value'] = 0
+        update_status("Ошибка при обучении", status_bar)
+        messagebox.showerror("Ошибка обучения",
+                             f"Не удалось обучить модель:\n{str(e)}\n\nПодробности в консоли")
+        print(f"Ошибка обучения:\n{traceback.format_exc()}")
 
 
 def main():
