@@ -1,14 +1,15 @@
 import re
 from pathlib import Path
 
-import pandas as pd
 import nltk
+import pandas as pd
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 
 nltk.download("stopwords", quiet=True)
 nltk.download("wordnet", quiet=True)
 nltk.download("omw-1.4", quiet=True)
+
 
 def clean_text(text: str, p_cfg: dict) -> str:
     if pd.isna(text):
@@ -28,17 +29,14 @@ def clean_text(text: str, p_cfg: dict) -> str:
         tokens = [lemmatizer.lemmatize(w) for w in tokens]
     return " ".join(tokens)
 
+
 def rename_and_map(df: pd.DataFrame, cfg: dict) -> pd.DataFrame:
     df = df.rename(
         columns={
             cfg["columns"]["review"]: "review",
-            cfg["columns"]["label"]:  "label"
-        }
-    )
-    df["label"] = df["label"].map({
-        cfg["values"]["good"]: 1,
-        cfg["values"]["bad"]:  0
-    })
+            cfg["columns"]["label"]: "label"})
+    df["label"] = df["label"].map(
+        {cfg["values"]["good"]: 1, cfg["values"]["bad"]: 0})
     return df
 
 
@@ -67,7 +65,11 @@ def clean_reviews(df: pd.DataFrame, p_cfg: dict) -> pd.DataFrame:
     df["review"] = df["review"].apply(_clean)
     return df
 
-def create_processed_csv(raw_csv_path, config, output_csv_path) -> pd.DataFrame:
+
+def create_processed_csv(
+        raw_csv_path,
+        config,
+        output_csv_path) -> pd.DataFrame:
     file = Path(output_csv_path)
     if file.exists() and file.is_file():
         print(f"File `{file}` already exists, skipping preprocessing.")
