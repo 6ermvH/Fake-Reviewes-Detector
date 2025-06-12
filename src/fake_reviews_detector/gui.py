@@ -1,13 +1,9 @@
-# src/fake_reviews_detector/gui.py
-
-
 from utils import load_yaml_config
 from preprocessing import create_processed_csv
 import train
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import os
-import pandas as pd
 from preview import preview_single, preview
 
 # Загрузка конфига
@@ -18,23 +14,20 @@ model_trained = False
 train_file_path = ""
 predict_file_path = ""
 cfg = load_yaml_config('config/local_dev.yaml')
+prediction_results = None
 
 
-def create_gui(root, status_bar=None) -> None:
-    # Настройка главного окна из конфига
+def create_gui(root) -> None:
     root.title(config['app']['title'])
     root.geometry(config['app']['geometry'])
-
-    # Применение стилей
-    style = ttk.Style()
-    style.configure('TFrame', background=config['app']['background'])
-    style.configure('TButton', font=config['styles']['button']['font'],
-                    padding=config['styles']['button']['padding'])
-    style.configure('TLabel', background=config['styles']['label']['background'],
-                    font=config['styles']['label']['font'])
-
-    # Основные окна
     main_frame = ttk.Frame(root)
+    main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+    create_main_tab(main_frame)
+
+
+def create_main_tab(parent):
+    # Основные фреймы
+    main_frame = ttk.Frame(parent)
     main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
     # Окно загрузки данных
@@ -82,14 +75,43 @@ def create_gui(root, status_bar=None) -> None:
     ttk.Button(predict_frame, text=config['ui_text']['buttons']['predict'],
                command=lambda: make_prediction(predict_text, predict_file_entry, results_text, status_bar)).pack(pady=5)
 
+    # Кнопка сохранения результатов
+    ttk.Button(predict_frame, text="Save Results to CSV",
+               command=lambda: save_results_to_csv()).pack(pady=5)
+
     # Метка и область результатов
     ttk.Label(predict_frame, text=config['ui_text']['labels']['results']).pack(anchor=tk.W)
     results_text = tk.Text(predict_frame, height=10, width=80, state=tk.DISABLED)
     results_text.pack(fill=tk.BOTH, expand=True)
 
     # Статус бар
+    global status_bar
     status_bar = ttk.Label(main_frame, text=config['ui_text']['status']['ready'], relief=tk.SUNKEN)
     status_bar.pack(fill=tk.X, pady=5)
+
+
+def save_results_to_csv() -> None:
+    global prediction_results
+    if prediction_results is None or len(prediction_results) == 0:
+        messagebox.showwarning("Warning", "No prediction results to save")
+        return
+
+    file_path = filedialog.asksaveasfilename(
+        defaultextension=".csv",
+        filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+        initialdir=config['files']['default_predict_dir']
+    )
+
+    if file_path:
+        try:
+            save_df = prediction_results.copy()
+            save_df['pred_label'] = save_df['pred_label'].replace({0: "Fake", 1: "Not fake"})
+
+            save_df.to_csv(file_path, index=False)
+            update_status(f"Results saved to {os.path.basename(file_path)}", status_bar)
+            messagebox.showinfo("Success", "Results saved successfully!")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to save results: {str(e)}")
 
 
 # Поиск файла для обучения
@@ -127,7 +149,7 @@ def browse_predict_file(entry_widget, status_bar) -> None:
 
 # Сделать предсказание
 def make_prediction(text_widget, file_entry, results_text, status_bar) -> None:
-    global model, model_trained
+    global model, model_trained, prediction_results
     if not model_trained:
         messagebox.showerror("Error", "Please, train model")
         return
@@ -142,10 +164,10 @@ def make_prediction(text_widget, file_entry, results_text, status_bar) -> None:
         results_text.delete("1.0", tk.END)
         if input_text:
             update_status("Processing input string...", status_bar)
-            try:  # 1 - не фейк
+            try:
                 prediction = preview_single(input_text, cfg)
                 results_text.insert(tk.END, f"Prediction result for {input_text}:"
-                                f" {'Not fake' if bool(prediction) else 'fake'}\n")
+                                            f" {'Not fake' if bool(prediction) else 'fake'}\n")
                 update_status("Prediction fulfilled for the input string", status_bar)
             except Exception as e:
                 results_text.insert(tk.END, f"Error processing string: {e}\n")
@@ -158,6 +180,7 @@ def make_prediction(text_widget, file_entry, results_text, status_bar) -> None:
                 for i in predict_file:
                     predicted_data += [str(i[:-1])]
                 prediction = preview(predicted_data, cfg)
+                prediction_results = prediction.copy()
                 prediction['pred_label'] = prediction['pred_label'].replace({0: "Fake", 1: "Not fake"})
                 results_text.insert(tk.END, prediction[['raw', 'pred_label']].rename(
                     columns={'raw': 'Review', 'pred_label': 'Status'}).to_string(index=False))
@@ -205,7 +228,9 @@ def train_model(progress_bar, status_bar) -> None:
 
 
 def main():
+    global root, notebook
     root = tk.Tk()
+    notebook = ttk.Notebook(root)
     create_gui(root)
     root.mainloop()
 

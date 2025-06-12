@@ -14,7 +14,7 @@ create_processed_csv(dataset, cfg, cfg['dataset_path'])
 train_model(cfg)
 
 print(preview(
-    ["Hello world!!!", 
+    ["Hello world!! !",
      "It`s so baaaad", 
      "What???",
      "Love this! Well made, sturdy, and very comfortable. I love it!Very pretty",
