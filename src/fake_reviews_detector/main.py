@@ -5,7 +5,7 @@ from utils import load_yaml_config
 from train import train_model
 from preview import *
 
-cfg = load_yaml_config('../../config/local_dev.yaml')
+cfg = load_yaml_config('config/local_dev.yaml')
 
 dataset = download_kaggle_dataset('mexwell/fake-reviews-dataset')
 

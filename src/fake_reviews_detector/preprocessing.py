@@ -1,5 +1,3 @@
-# src/fake_reviews_detector/preprocessing.py
-
 import re
 from pathlib import Path
 
@@ -13,11 +11,6 @@ nltk.download("wordnet", quiet=True)
 nltk.download("omw-1.4", quiet=True)
 
 def clean_text(text: str, p_cfg: dict) -> str:
-    """
-    Clean a single review text according to preprocessing settings.
-    """
-    import pandas as pd
-    # replace NaN or non-string with empty
     if pd.isna(text):
         return ""
     t = str(text).lower() if p_cfg.get("lowercase", False) else str(text)
@@ -50,8 +43,6 @@ def rename_and_map(df: pd.DataFrame, cfg: dict) -> pd.DataFrame:
 
 
 def clean_reviews(df: pd.DataFrame, p_cfg: dict) -> pd.DataFrame:
-    import pandas as pd
-    # 0) замена NaN на пустые строки
     df["review"] = df["review"].fillna("")
 
     sw = set(stopwords.words("english"))
@@ -59,7 +50,6 @@ def clean_reviews(df: pd.DataFrame, p_cfg: dict) -> pd.DataFrame:
     lemmatizer = WordNetLemmatizer() if p_cfg["lemmatization"] else None
 
     def _clean(text: str) -> str:
-        # если вдруг оставшийся NaN
         if pd.isna(text):
             return ""
         t = str(text).lower() if p_cfg["lowercase"] else str(text)
@@ -80,6 +70,7 @@ def clean_reviews(df: pd.DataFrame, p_cfg: dict) -> pd.DataFrame:
 def create_processed_csv(raw_csv_path, config, output_csv_path) -> pd.DataFrame:
     file = Path(output_csv_path)
     if file.exists() and file.is_file():
+        print(f"File `{file}` already exists, skipping preprocessing.")
         return
 
     ds_cfg = config["dataset"]
@@ -95,5 +86,6 @@ def create_processed_csv(raw_csv_path, config, output_csv_path) -> pd.DataFrame:
     out_path = Path(output_csv_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     df[["review", "label"]].to_csv(out_path, index=False)
-    return df
 
+    print(f"Processed data saved to `{out_path}`")
+    return df
