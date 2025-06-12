@@ -8,7 +8,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import os
 import pandas as pd
-from preview import preview_single
+from preview import preview_single, preview
 
 # Загрузка конфига
 config = load_yaml_config("config/gui_config.yaml")
@@ -16,8 +16,9 @@ config = load_yaml_config("config/gui_config.yaml")
 model = None
 model_trained = False
 train_file_path = ""
-test_file_path = ""
+predict_file_path = ""
 cfg = load_yaml_config('config/local_dev.yaml')
+
 
 def create_gui(root, status_bar=None) -> None:
     # Настройка главного окна из конфига
@@ -109,7 +110,7 @@ def browse_train_file(entry_widget, status_bar) -> None:
 
 # Поиск файла для предсказания
 def browse_predict_file(entry_widget, status_bar) -> None:
-    global test_file_path
+    global predict_file_path
     initial_dir = config['files']['default_predict_dir'] if os.path.exists(
         config['files']['default_predict_dir']) else None
     file_path = filedialog.askopenfilename(
@@ -118,7 +119,7 @@ def browse_predict_file(entry_widget, status_bar) -> None:
             ("All files", "*.*")]
     )
     if file_path:
-        test_file_path = file_path
+        predict_file_path = file_path
         entry_widget.delete(0, tk.END)
         entry_widget.insert(0, file_path)
         update_status(f"Loaded predict file: {os.path.basename(file_path)}", status_bar)
@@ -131,8 +132,9 @@ def make_prediction(text_widget, file_entry, results_text, status_bar) -> None:
         messagebox.showerror("Error", "Please, train model")
         return
     input_text = text_widget.get("1.0", tk.END).strip()
-    file_path = file_entry.get().strip()
-    if not input_text and not file_path:
+    text_widget.option_clear()
+    predict_file_path = file_entry.get().strip()
+    if not input_text and not predict_file_path:
         messagebox.showerror("Error", "Please enter text or select a file for prediction.")
         return
     try:
@@ -140,21 +142,26 @@ def make_prediction(text_widget, file_entry, results_text, status_bar) -> None:
         results_text.delete("1.0", tk.END)
         if input_text:
             update_status("Processing input string...", status_bar)
-            try:
+            try:  # 1 - не фейк
                 prediction = preview_single(input_text, cfg)
-                results_text.insert(tk.END, f"Prediction result for {input_text}: {bool(prediction)}\n")
+                results_text.insert(tk.END, f"Prediction result for {input_text}:"
+                                f" {'Not fake' if bool(prediction) else 'fake'}\n")
                 update_status("Prediction fulfilled for the input string", status_bar)
             except Exception as e:
                 results_text.insert(tk.END, f"Error processing string: {e}\n")
                 update_status("Error in format of entered string", status_bar)
-        if file_path:
-            update_status(f"Processing file {os.path.basename(file_path)}...", status_bar)
+        if predict_file_path:
+            update_status(f"Processing file {os.path.basename(predict_file_path)}...", status_bar)
             try:
-                test_data = pd.read_csv(file_path)
-                results_text.insert(tk.END, "Prediction result:\n")
-                for i, pred in enumerate(predictions, 1):
-                    results_text.insert(tk.END, f"String {i}: {pred}\n")
-                update_status(f"Prediction fulfilled for file {os.path.basename(file_path)}", status_bar)
+                predict_file = open(predict_file_path)
+                predicted_data = []
+                for i in predict_file:
+                    predicted_data += [str(i[:-1])]
+                prediction = preview(predicted_data, cfg)
+                prediction['pred_label'] = prediction['pred_label'].replace({0: "Fake", 1: "Not fake"})
+                results_text.insert(tk.END, prediction[['raw', 'pred_label']].rename(
+                    columns={'raw': 'Review', 'pred_label': 'Status'}).to_string(index=False))
+                update_status(f"Prediction fulfilled for file {os.path.basename(predict_file_path)}", status_bar)
             except Exception as e:
                 results_text.insert(tk.END, f"Error processing file: {str(e)}\n")
                 update_status("Error processing file", status_bar)
