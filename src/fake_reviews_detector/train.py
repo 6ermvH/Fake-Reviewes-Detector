@@ -51,7 +51,7 @@ def build_model(m_cfg: dict):
     raise ValueError(f"Unknown model type: {t}")
 
 
-def train_model(cfg) -> None:
+def training(cfg) -> None:
     v_cfg  = cfg["vectorizer"]
     m_cfg  = cfg["model"]
     tr_cfg = cfg["training"]

@@ -1,4 +1,5 @@
 from fake_reviews_detector.utils import load_yaml_config
+from fake_reviews_detector.train import training
 from fake_reviews_detector.preprocessing import create_processed_csv
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
@@ -215,7 +216,7 @@ def train_model(progress_bar, status_bar) -> None:
         create_processed_csv(train_file_path, cfg, cfg["dataset_path"])
         progress_bar['value'] = 50
         update_status("Learning model...", status_bar)
-        train.train_model(cfg)
+        training(cfg)
         progress_bar['value'] = 80
         update_status("Finalization of the model...", status_bar)
         model_trained = True
