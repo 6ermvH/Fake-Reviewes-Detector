@@ -1,4 +1,6 @@
 dataset_path: data/processed/data.csv
+model_path: data/model/model.pkl
+vectorizer_path: data/model/vectorizer.pkl
 
 dataset:
   columns:

@@ -3,8 +3,7 @@
 
 from utils import load_yaml_config
 from preprocessing import create_processed_csv
-# import data_loader
-# import modelx
+import train
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import os
@@ -18,7 +17,7 @@ model = None
 model_trained = False
 train_file_path = ""
 test_file_path = ""
-
+cfg = load_yaml_config('../../config/local_dev.yaml')
 
 def create_gui(root, status_bar=None) -> None:
     # Настройка главного окна из конфига
@@ -188,9 +187,7 @@ def train_model(progress_bar, status_bar) -> None:
             raise ValueError("Preprocessing returned empty data")
         progress_bar['value'] = 50
         update_status("Learning model...", status_bar)
-
-        # Обучение модели
-
+        train_model(cfg)
         progress_bar['value'] = 80
         update_status("Finalization of the model...", status_bar)
         time.sleep(1)
