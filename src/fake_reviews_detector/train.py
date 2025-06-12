@@ -57,6 +57,7 @@ def train_model(cfg) -> None:
     tr_cfg = cfg["training"]
 
     df = pd.read_csv(cfg["dataset_path"])
+    print(df)
     df["review"] = df["review"].fillna("")
     df = df[df["review"].str.strip() != ""]
 

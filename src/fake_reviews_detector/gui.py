@@ -1,3 +1,4 @@
+from fake_reviews_detector.logger import init_logger
 from utils import load_yaml_config
 from preprocessing import create_processed_csv
 import train
@@ -5,6 +6,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import os
 from preview import preview_single, preview
+from logger import init_logger
 
 # Загрузка конфига
 config = load_yaml_config("config/gui_config.yaml")
@@ -14,6 +16,9 @@ model_trained = False
 train_file_path = ""
 predict_file_path = ""
 cfg = load_yaml_config('config/local_dev.yaml')
+
+init_logger(cfg)
+
 prediction_results = None
 
 
