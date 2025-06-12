@@ -1,27 +1,31 @@
 # src/fake_reviews_detector/preprocessing.py
+from pandas.io.xml import preprocess_data
 
+from utils import load_yaml_config
 import re
 from pathlib import Path
-
 import pandas as pd
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 
+p_cfg = load_yaml_config("../../config/local_dev.yaml")
+
 nltk.download("stopwords", quiet=True)
 nltk.download("wordnet", quiet=True)
 nltk.download("omw-1.4", quiet=True)
+
 
 def rename_and_map(df: pd.DataFrame, cfg: dict) -> pd.DataFrame:
     df = df.rename(
         columns={
             cfg["columns"]["review"]: "review",
-            cfg["columns"]["label"]:  "label"
+            cfg["columns"]["label"]: "label"
         }
     )
     df["label"] = df["label"].map({
         cfg["values"]["good"]: 1,
-        cfg["values"]["bad"]:  0
+        cfg["values"]["bad"]: 0
     })
     return df
 
@@ -47,7 +51,8 @@ def clean_reviews(df: pd.DataFrame, p_cfg: dict) -> pd.DataFrame:
     df["review"] = df["review"].astype(str).apply(_clean)
     return df
 
-def create_processed_csv(raw_csv_path, config, output_csv_path) -> pd.DataFrame:
+
+def create_processed_csv(raw_csv_path, config=p_cfg, output_csv_path=None) -> pd.DataFrame:
     ds_cfg = config["dataset"]
     pp_cfg = config["preprocessing"]
 
@@ -59,4 +64,3 @@ def create_processed_csv(raw_csv_path, config, output_csv_path) -> pd.DataFrame:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     df[["review", "label"]].to_csv(out_path, index=False)
     return df
-

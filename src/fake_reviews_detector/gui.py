@@ -8,10 +8,8 @@ from preprocessing import create_processed_csv
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import os
-from tkinter import messagebox
 import pandas as pd
 import time
-import traceback
 
 # Загрузка конфига
 config = load_yaml_config("../../config/gui_config.yaml")
@@ -145,11 +143,11 @@ def make_prediction(text_widget, file_entry, results_text, status_bar) -> None:
             update_status("Processing input string...", status_bar)
             try:
                 data = [list(map(float, input_text.split(',')))]
-                prediction = model.predict(data)
-                results_text.insert(tk.END, f"Prediction result: {prediction[0]}\n")
+                # prediction = model.predict(data)
+                # results_text.insert(tk.END, f"Prediction result: {prediction[0]}\n")
                 update_status("Prediction fulfilled for the input string", status_bar)
             except Exception as e:
-                results_text.insert(tk.END, f"Error: Invalid string format.\n")
+                results_text.insert(tk.END, f"Error processing string: {e}\n")
                 update_status("Error in format of entered string", status_bar)
         if file_path:
             update_status(f"Processing file {os.path.basename(file_path)}...", status_bar)
@@ -206,7 +204,6 @@ def train_model(progress_bar, status_bar) -> None:
         update_status("Error during training", status_bar)
         messagebox.showerror("Error during training",
                              f"Failed to train model:\n{str(e)}\n\nDetails in the console")
-        print(f"Error during training:\n{traceback.format_exc()}")
 
 
 def main():
