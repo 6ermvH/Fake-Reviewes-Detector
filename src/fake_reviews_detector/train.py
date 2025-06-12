@@ -1,5 +1,3 @@
-# src/fake_reviews_detector/train.py
-
 import joblib
 import pandas as pd
 from pathlib import Path
@@ -13,6 +11,7 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import accuracy_score, classification_report
 
 def split_data(df: pd.DataFrame, tr_cfg: dict):
+    print("Splitting data into train")
     X = df["review"]
     y = df["label"]
     stratify = y if tr_cfg.get("stratify", False) else None
@@ -25,6 +24,7 @@ def split_data(df: pd.DataFrame, tr_cfg: dict):
 
 
 def build_vectorizer(v_cfg: dict):
+    print(f"Building vectorizer of type {v_cfg['type']} with max_features={v_cfg['max_features']} and ngram_range={v_cfg['ngram_range']}")
     if v_cfg["type"] == "tfidf":
         return TfidfVectorizer(
             max_features=v_cfg["max_features"],
@@ -37,6 +37,7 @@ def build_vectorizer(v_cfg: dict):
 
 
 def build_model(m_cfg: dict):
+    print(f"Building model of type {m_cfg['type']} with hyperparameters {m_cfg['hyperparameters']}")
     t = m_cfg["type"]
     params = m_cfg["hyperparameters"]
     if t == "logistic_regression":
@@ -69,6 +70,8 @@ def train_model(cfg) -> None:
 
     model = build_model(m_cfg)
     model.fit(X_train_vec, y_train)
+
+    print(f"Model info:")
 
     y_pred = model.predict(X_test_vec)
     print("Accuracy:", accuracy_score(y_test, y_pred))
