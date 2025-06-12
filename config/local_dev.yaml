@@ -1,9 +1,6 @@
+dataset_path: data/processed/data.csv
+
 dataset:
-  image: mexwell/fake-reviews-dataset
-  raw_data_dir: data/raw/
-  raw_data_file: reviewes.csv
-  processed_data_dir: data/raw/processed.csv
-  processed_data_file: processed.csv
   columns:
     review: text_
     label: label
