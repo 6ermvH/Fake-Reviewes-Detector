@@ -1,12 +1,10 @@
-from fake_reviews_detector.logger import init_logger
-from utils import load_yaml_config
-from preprocessing import create_processed_csv
-import train
+from fake_reviews_detector.utils import load_yaml_config
+from fake_reviews_detector.preprocessing import create_processed_csv
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import os
-from preview import preview_single, preview
-from logger import init_logger
+from fake_reviews_detector.preview import preview_single, preview
+from fake_reviews_detector.logger import init_logger
 
 # Загрузка конфига
 config = load_yaml_config("config/gui_config.yaml")
@@ -232,13 +230,9 @@ def train_model(progress_bar, status_bar) -> None:
                              f"Failed to train model:\n{str(e)}\n\nDetails in the console")
 
 
-def main():
+def run_gui():
     global root, notebook
     root = tk.Tk()
     notebook = ttk.Notebook(root)
     create_gui(root)
     root.mainloop()
-
-
-if __name__ == "__main__":
-    main()
