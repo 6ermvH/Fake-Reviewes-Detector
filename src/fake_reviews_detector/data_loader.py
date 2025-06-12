@@ -1,5 +1,7 @@
 from pathlib import Path
+
 import kagglehub
+
 
 def download_kaggle_dataset(image: str) -> Path:
     dataset_dir = Path(kagglehub.dataset_download(image))
