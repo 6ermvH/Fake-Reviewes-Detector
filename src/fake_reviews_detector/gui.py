@@ -11,13 +11,13 @@ import pandas as pd
 import time
 
 # Загрузка конфига
-config = load_yaml_config("../../config/gui_config.yaml")
+config = load_yaml_config("config/gui_config.yaml")
 
 model = None
 model_trained = False
 train_file_path = ""
 test_file_path = ""
-cfg = load_yaml_config('../../config/local_dev.yaml')
+cfg = load_yaml_config('config/local_dev.yaml')
 
 def create_gui(root, status_bar=None) -> None:
     # Настройка главного окна из конфига
@@ -182,12 +182,12 @@ def train_model(progress_bar, status_bar) -> None:
         raw_data = pd.read_csv(train_file_path)
         progress_bar['value'] = 10
         update_status("Preprocessing data...", status_bar)
-        processed_data = create_processed_csv(raw_data)
-        if processed_data is None or processed_data.empty:
-            raise ValueError("Preprocessing returned empty data")
+        create_processed_csv(raw_data, cfg, cfg["dataset_path"])
+        # if processed_data is None or processed_data.empty:
+        #     raise ValueError("Preprocessing returned empty data")
         progress_bar['value'] = 50
         update_status("Learning model...", status_bar)
-        train_model(cfg)
+        # train_model(cfg)
         progress_bar['value'] = 80
         update_status("Finalization of the model...", status_bar)
         time.sleep(1)
