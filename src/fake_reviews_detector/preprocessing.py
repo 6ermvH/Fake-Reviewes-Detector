@@ -1,47 +1,62 @@
-from fake_reviews_detector.utils import load_yaml_config
-import pandas as pd
+# src/fake_reviews_detector/preprocessing.py
+
 import re
+from pathlib import Path
+
+import pandas as pd
 import nltk
 from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer, WordNetLemmatizer
 
-# Загрузка конфига
-config = load_yaml_config("../../config/local_dev.yaml")
+nltk.download("stopwords", quiet=True)
+nltk.download("wordnet", quiet=True)
+nltk.download("omw-1.4", quiet=True)
 
-# Загрузка шумовых слов
-nltk.download('stopwords', quiet=True)
-
-
-# Очистка и превращение текста в удобный вид
-def clean_text(text: str) -> str:
-    if config["lowercase"]:
-        text = text.lower()
-    if config["remove_punctuation"]:
-        text = re.sub(r'[^\w\s]', '', text)
-    if config["remove_stopwords"]:
-        stop_words = set(stopwords.words('english'))
-        text = " ".join([word for word in text.split() if word not in stop_words])
-    return text
-
-
-# Предобработка данных
-def preprocess_dataset(df: pd.DataFrame) -> pd.DataFrame:
-    review_col = config["dataset"]["columns"]["review"]
-    label_col = config["dataset"]["columns"]["label"]
-    value_map = {
-        config["dataset"]["values"]["good"]: 1,
-        config["dataset"]["values"]["bad"]: 0
-    }
-    preprocessing_cfg = config["preprocessing"]
-
-    df = df.rename(columns={
-        review_col: "text",
-        label_col: "label"
+def rename_and_map(df: pd.DataFrame, cfg: dict) -> pd.DataFrame:
+    df = df.rename(
+        columns={
+            cfg["columns"]["review"]: "review",
+            cfg["columns"]["label"]:  "label"
+        }
+    )
+    df["label"] = df["label"].map({
+        cfg["values"]["good"]: 1,
+        cfg["values"]["bad"]:  0
     })
-
-    df["label"] = df["label"].map(value_map)
-    df["text"] = df["text"].apply(lambda x: clean_text(str(x), preprocessing_cfg))
-    print(f"Preprocessed dataset shape: {df.shape}")
-    processed_path = config["dataset"]["processed_data_path"]
-    df.to_csv(processed_path, index=False)
-    print(f"Saved preprocessed dataset to {processed_path}")
     return df
+
+
+def clean_reviews(df: pd.DataFrame, p_cfg: dict) -> pd.DataFrame:
+    sw = set(stopwords.words("english"))
+    stemmer = PorterStemmer() if p_cfg["stemming"] else None
+    lemmatizer = WordNetLemmatizer() if p_cfg["lemmatization"] else None
+
+    def _clean(text: str) -> str:
+        t = text.lower() if p_cfg["lowercase"] else text
+        if p_cfg["remove_punctuation"]:
+            t = re.sub(r"[^\w\s]", "", t)
+        tokens = t.split()
+        if p_cfg["remove_stopwords"]:
+            tokens = [w for w in tokens if w not in sw]
+        if stemmer:
+            tokens = [stemmer.stem(w) for w in tokens]
+        if lemmatizer:
+            tokens = [lemmatizer.lemmatize(w) for w in tokens]
+        return " ".join(tokens)
+
+    df["review"] = df["review"].astype(str).apply(_clean)
+    return df
+
+def create_processed_csv(raw_csv_path, config, output_csv_path) -> pd.DataFrame:
+    ds_cfg = config["dataset"]
+    pp_cfg = config["preprocessing"]
+
+    df = pd.read_csv(raw_csv_path)
+    df = rename_and_map(df, ds_cfg)
+    df = clean_reviews(df, pp_cfg)
+
+    out_path = Path(output_csv_path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    df[["review", "label"]].to_csv(out_path, index=False)
+    return df
+
